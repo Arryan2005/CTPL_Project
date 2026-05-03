@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Edit Student — StudentMS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h4 class="page-title">Edit Student</h4>
+    <p class="page-sub">Update {{ student.name }}'s record</p>
+  </div>
+  <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">← Back</a>
+</div>
+
+<form method="POST" action="{{ url_for('edit_student', id=student.id) }}" id="studentForm">
+  <div class="form-card mb-3">
+    <div class="form-grid">
+      <div class="mb-3">
+        <label class="form-label">Full Name</label>
+        <input type="text" name="name" class="form-control" value="{{ student.name }}" required/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Roll Number</label>
+        <input type="text" name="roll_no" class="form-control" value="{{ student.roll_no }}" required/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Department</label>
+        <select name="department" class="form-select" required>
+          {% for dept in ['Computer Science', 'Information Technology', 'Electronics', 'Mechanical', 'Civil'] %}
+            <option {% if student.department == dept %}selected{% endif %}>{{ dept }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Number of Subjects</label>
+        <select name="num_subjects" id="numSubjects" class="form-select" onchange="updateSubjects()">
+          <option value="3" {% if student.num_subjects == 3 %}selected{% endif %}>3 Subjects</option>
+          <option value="4" {% if student.num_subjects == 4 %}selected{% endif %}>4 Subjects</option>
+          <option value="5" {% if student.num_subjects == 5 %}selected{% endif %}>5 Subjects</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card mb-3">
+    <div class="section-label mb-3">
+      <span>Subject-wise Marks</span>
+      <span class="section-hint">Edit subject names and marks below.</span>
+    </div>
+
+    <div class="subjects-table">
+      <div class="subjects-header">
+        <div>Subject</div>
+        <div>Obtained Marks</div>
+        <div>Max Marks</div>
+      </div>
+
+      {% set subs = [
+        (student.sub1_name, student.sub1_marks, student.sub1_max),
+        (student.sub2_name, student.sub2_marks, student.sub2_max),
+        (student.sub3_name, student.sub3_marks, student.sub3_max),
+        (student.sub4_name, student.sub4_marks, student.sub4_max),
+        (student.sub5_name, student.sub5_marks, student.sub5_max),
+      ] %}
+
+      {% for i in range(1, 6) %}
+      {% set sub = subs[i-1] %}
+      <div class="subject-row" id="row{{ i }}">
+        <div class="sub-name-cell">
+          <input type="text" name="sub{{ i }}_name" class="form-control sub-name-input"
+                 value="{{ sub[0] }}" placeholder="Subject name"/>
+        </div>
+        <div class="sub-marks-cell">
+          <input type="number" name="sub{{ i }}_marks" class="form-control marks-input obtained"
+                 value="{{ sub[1] }}" placeholder="e.g. 78" min="0" step="0.5" oninput="calcTotal()"/>
+        </div>
+        <div class="sub-max-cell">
+          <input type="number" name="sub{{ i }}_max" class="form-control marks-input max-marks"
+                 value="{{ sub[2] }}" min="1" step="1" oninput="calcTotal()"/>
+        </div>
+      </div>
+      {% endfor %}
+
+      <div class="subjects-total">
+        <div class="total-label">Total</div>
+        <div class="total-val blue" id="totalObtained">0</div>
+        <div class="total-val blue" id="totalMax">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions-outer">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateSubjects() {
+  const n = parseInt(document.getElementById('numSubjects').value);
+  for (let i = 1; i <= 5; i++) {
+    const row = document.getElementById('row' + i);
+    const inputs = row.querySelectorAll('input');
+    if (i <= n) {
+      row.classList.remove('row-disabled');
+      inputs.forEach(inp => inp.disabled = false);
+    } else {
+      row.classList.add('row-disabled');
+      inputs.forEach(inp => inp.disabled = true);
+    }
+  }
+  calcTotal();
+}
+
+function calcTotal() {
+  const n = parseInt(document.getElementById('numSubjects').value);
+  let obtained = 0, max = 0;
+  for (let i = 1; i <= n; i++) {
+    const o = parseFloat(document.querySelector(`[name=sub${i}_marks]`).value) || 0;
+    const m = parseFloat(document.querySelector(`[name=sub${i}_max]`).value) || 0;
+    obtained += o;
+    max += m;
+  }
+  document.getElementById('totalObtained').textContent = obtained % 1 === 0 ? obtained : obtained.toFixed(1);
+  document.getElementById('totalMax').textContent = max % 1 === 0 ? max : max.toFixed(1);
+}
+
+updateSubjects();
+calcTotal();
+</script>
+{% endblock %}
