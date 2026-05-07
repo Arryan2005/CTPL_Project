@@ -7,23 +7,24 @@
     <h4 class="page-title">Add New Student</h4>
     <p class="page-sub">Fill in the details below</p>
   </div>
-  <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">← Back</a>
+  <a href="{{ url_for('students') }}" class="btn-back">← Back</a>
 </div>
 
-<form method="POST" action="{{ url_for('add_student') }}" id="studentForm">
-  <div class="form-card mb-3">
+<form method="POST" action="{{ url_for('add_student') }}">
+  <div class="card mb-16">
+    <div class="card-title" style="margin-bottom:16px;">Basic Information</div>
     <div class="form-grid">
-      <div class="mb-3">
+      <div class="form-group">
         <label class="form-label">Full Name</label>
-        <input type="text" name="name" class="form-control" placeholder="e.g. Aryan Mehta" required/>
+        <input type="text" name="name" class="form-input" placeholder="e.g. Aryan Mehta" required/>
       </div>
-      <div class="mb-3">
+      <div class="form-group">
         <label class="form-label">Roll Number</label>
-        <input type="text" name="roll_no" class="form-control" placeholder="e.g. CS2201" required/>
+        <input type="text" name="roll_no" class="form-input" placeholder="e.g. CS2201" required/>
       </div>
-      <div class="mb-3">
+      <div class="form-group">
         <label class="form-label">Department</label>
-        <select name="department" class="form-select" required>
+        <select name="department" class="form-input" required>
           <option value="" disabled selected>Select department</option>
           <option>Computer Science</option>
           <option>Information Technology</option>
@@ -32,9 +33,9 @@
           <option>Civil</option>
         </select>
       </div>
-      <div class="mb-3">
+      <div class="form-group">
         <label class="form-label">Number of Subjects</label>
-        <select name="num_subjects" id="numSubjects" class="form-select" onchange="updateSubjects()">
+        <select name="num_subjects" id="numSubjects" class="form-input" onchange="updateSubjects()">
           <option value="3">3 Subjects</option>
           <option value="4">4 Subjects</option>
           <option value="5" selected>5 Subjects</option>
@@ -43,101 +44,74 @@
     </div>
   </div>
 
-  <div class="form-card mb-3">
-    <div class="section-label mb-3">
-      <span>Subject-wise Marks</span>
-      <span class="section-hint">Enter obtained marks and max marks for each subject.</span>
-    </div>
-
+  <div class="card mb-16">
+    <div class="card-title" style="margin-bottom:4px;">Subject-wise Marks</div>
+    <p class="card-hint" style="margin-bottom:16px;">Subject names are editable. Inactive rows are grayed out.</p>
     <div class="subjects-table">
       <div class="subjects-header">
         <div>Subject</div>
-        <div>Obtained Marks</div>
-        <div>Max Marks</div>
+        <div>Obtained</div>
+        <div>Max</div>
       </div>
-
-      {% set defaults = [
-        ('Python Programming', 100),
-        ('Data Structures', 100),
-        ('DBMS', 100),
-        ('Computer Networks', 100),
-        ('Mathematics', 100)
-      ] %}
-
-      {% for i in range(1, 6) %}
-      {% set idx = i - 1 %}
+      {% set defaults = [('Python Programming',100),('Data Structures',100),('DBMS',100),('Computer Networks',100),('Mathematics',100)] %}
+      {% for i in range(1,6) %}
       <div class="subject-row" id="row{{ i }}">
-        <div class="sub-name-cell">
-          <input type="text" name="sub{{ i }}_name" class="form-control sub-name-input"
-                 value="{{ defaults[idx][0] }}" placeholder="Subject name"/>
+        <div>
+          <input type="text" name="sub{{ i }}_name" class="form-input sub-name-input" value="{{ defaults[i-1][0] }}"/>
         </div>
-        <div class="sub-marks-cell">
-          <input type="number" name="sub{{ i }}_marks" class="form-control marks-input obtained"
-                 placeholder="e.g. 78" min="0" step="0.5" oninput="calcTotal()"/>
+        <div>
+          <input type="number" name="sub{{ i }}_marks" class="form-input marks-input" placeholder="0" min="0" step="0.5" oninput="calcTotal()"/>
         </div>
-        <div class="sub-max-cell">
-          <input type="number" name="sub{{ i }}_max" class="form-control marks-input max-marks"
-                 value="{{ defaults[idx][1] }}" min="1" step="1" oninput="calcTotal()"/>
+        <div>
+          <input type="number" name="sub{{ i }}_max" class="form-input marks-input" value="{{ defaults[i-1][1] }}" min="1" oninput="calcTotal()"/>
         </div>
       </div>
       {% endfor %}
-
       <div class="subjects-total">
-        <div class="total-label">Total</div>
-        <div class="total-val blue" id="totalObtained">0</div>
-        <div class="total-val blue" id="totalMax">500</div>
+        <div>Total</div>
+        <div id="totalObtained" class="total-val">0</div>
+        <div id="totalMax" class="total-val">500</div>
       </div>
     </div>
   </div>
 
-  <div class="form-actions-outer">
-    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Cancel</a>
-    <button type="submit" class="btn btn-primary">Add Student</button>
+  <div class="form-actions">
+    <a href="{{ url_for('students') }}" class="btn-back">Cancel</a>
+    <button type="submit" class="btn-primary-custom">Add Student</button>
   </div>
 </form>
 {% endblock %}
 
 {% block scripts %}
 <script>
-const DEFAULTS = [
-  ['Python Programming', 100],
-  ['Data Structures', 100],
-  ['DBMS', 100],
-  ['Computer Networks', 100],
-  ['Mathematics', 100]
-];
-
+const DEFAULTS = [100,100,100,100,100];
 function updateSubjects() {
   const n = parseInt(document.getElementById('numSubjects').value);
+  let maxTotal = 0;
   for (let i = 1; i <= 5; i++) {
     const row = document.getElementById('row' + i);
     const inputs = row.querySelectorAll('input');
     if (i <= n) {
       row.classList.remove('row-disabled');
       inputs.forEach(inp => inp.disabled = false);
+      maxTotal += parseFloat(row.querySelectorAll('input')[2]?.value) || DEFAULTS[i-1];
     } else {
       row.classList.add('row-disabled');
-      inputs.forEach(inp => { inp.disabled = true; inp.value = ''; });
-      row.querySelector('.max-marks').value = DEFAULTS[i-1][1];
+      inputs.forEach(inp => inp.disabled = true);
     }
   }
   calcTotal();
 }
-
 function calcTotal() {
   const n = parseInt(document.getElementById('numSubjects').value);
-  let obtained = 0, max = 0;
+  let ob = 0, mx = 0;
   for (let i = 1; i <= n; i++) {
-    const o = parseFloat(document.querySelector(`[name=sub${i}_marks]`).value) || 0;
-    const m = parseFloat(document.querySelector(`[name=sub${i}_max]`).value) || 0;
-    obtained += o;
-    max += m;
+    ob += parseFloat(document.querySelector(`[name=sub${i}_marks]`).value) || 0;
+    mx += parseFloat(document.querySelector(`[name=sub${i}_max]`).value) || 0;
   }
-  document.getElementById('totalObtained').textContent = obtained % 1 === 0 ? obtained : obtained.toFixed(1);
-  document.getElementById('totalMax').textContent = max % 1 === 0 ? max : max.toFixed(1);
+  document.getElementById('totalObtained').textContent = ob % 1 ? ob.toFixed(1) : ob;
+  document.getElementById('totalMax').textContent = mx % 1 ? mx.toFixed(1) : mx;
 }
-
 updateSubjects();
-document.querySelectorAll('.max-marks').forEach(inp => inp.addEventListener('input', calcTotal));
 </script>
 {% endblock %}

@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}Import CSV — StudentMS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h4 class="page-title">Import from CSV</h4>
+    <p class="page-sub">Upload your Excel sheet saved as a CSV file</p>
+  </div>
+  <a href="{{ url_for('students') }}" class="btn-back">← Back</a>
+</div>
+
+{% if not done %}
+<div class="card mb-16">
+  <div class="card-title" style="margin-bottom:6px;">How to prepare your Excel sheet</div>
+  <p class="card-hint" style="margin-bottom:16px;">Your sheet must have these exact column names in the first row.</p>
+
+  <div class="col-list">
+    <div class="col-group">
+      <div class="col-group-title">Required</div>
+      <div class="col-item required-col"><code>name</code><span>Full student name</span></div>
+      <div class="col-item required-col"><code>roll_no</code><span>Unique roll number</span></div>
+      <div class="col-item required-col"><code>department</code><span>Must match exactly — Computer Science / Information Technology / Electronics / Mechanical / Civil</span></div>
+      <div class="col-item required-col"><code>num_subjects</code><span>3, 4, or 5</span></div>
+    </div>
+    <div class="col-group">
+      <div class="col-group-title">Subjects (repeat for sub1 to sub5)</div>
+      <div class="col-item"><code>sub1_name</code><span>Subject name e.g. Python Programming</span></div>
+      <div class="col-item"><code>sub1_marks</code><span>Marks obtained e.g. 88</span></div>
+      <div class="col-item"><code>sub1_max</code><span>Max marks e.g. 100</span></div>
+      <div class="col-item muted-col"><code>sub2_name, sub2_marks, sub2_max ...</code><span>Repeat for sub2 to sub5</span></div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong>Tip:</strong> In Excel go to <strong>File → Save As → CSV (Comma delimited)</strong> to convert. If num_subjects is 3, you can leave sub4 and sub5 columns blank.
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title" style="margin-bottom:16px;">Upload your CSV file</div>
+  <form method="POST" action="{{ url_for('import_csv') }}" enctype="multipart/form-data">
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">📂</div>
+      <div class="upload-text">Click to select your CSV file</div>
+      <div class="upload-hint">or drag and drop here</div>
+      <input type="file" name="csv_file" id="csvFile" accept=".csv" onchange="showFile(this)"/>
+    </div>
+    <div id="fileNameDisplay" class="file-name-display" style="display:none;"></div>
+    <div class="form-actions" style="margin-top:20px;">
+      <a href="{{ url_for('students') }}" class="btn-back">Cancel</a>
+      <button type="submit" class="btn-primary-custom">Import Students</button>
+    </div>
+  </form>
+</div>
+
+{% else %}
+
+<div class="card mb-16">
+  <div class="import-result">
+    <div class="result-stat {% if added > 0 %}result-success{% endif %}">
+      <div class="result-num">{{ added }}</div>
+      <div class="result-lbl">Students imported</div>
+    </div>
+    <div class="result-stat {% if skipped > 0 %}result-warn{% endif %}">
+      <div class="result-num">{{ skipped }}</div>
+      <div class="result-lbl">Rows skipped</div>
+    </div>
+  </div>
+</div>
+
+{% if errors %}
+<div class="card mb-16">
+  <div class="card-title" style="margin-bottom:12px;">Skipped rows — reasons</div>
+  {% for err in errors %}
+  <div class="error-row">⚠ {{ err }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="form-actions">
+  <a href="{{ url_for('import_csv') }}" class="btn-back">Import another file</a>
+  <a href="{{ url_for('students') }}" class="btn-primary-custom">View all students →</a>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const area = document.getElementById('uploadArea');
+const input = document.getElementById('csvFile');
+const display = document.getElementById('fileNameDisplay');
+
+if (area) {
+  area.addEventListener('click', () => input.click());
+  area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('drag-over'); });
+  area.addEventListener('dragleave', () => area.classList.remove('drag-over'));
+  area.addEventListener('drop', e => {
+    e.preventDefault();
+    area.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+      showFile(input);
+    }
+  });
+}
+
+function showFile(input) {
+  if (input.files.length) {
+    display.textContent = '📄 ' + input.files[0].name;
+    display.style.display = 'block';
+    document.querySelector('.upload-text').textContent = 'File selected';
+  }
+}
+</script>
+{% endblock %}

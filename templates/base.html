@@ -8,30 +8,49 @@
   <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet"/>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg">
-    <div class="container">
-      <a class="navbar-brand" href="{{ url_for('index') }}">
-        <span class="brand-icon">S</span> StudentMS
-      </a>
-      <div class="navbar-nav ms-auto">
-        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">Dashboard</a>
-        <a class="nav-link {% if request.endpoint == 'add_student' %}active{% endif %}" href="{{ url_for('add_student') }}">+ Add Student</a>
-      </div>
-    </div>
-  </nav>
+  <div class="app-shell">
 
-  <div class="container mt-4">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-    {% block content %}{% endblock %}
+    <aside class="sidebar">
+      <div class="sb-brand">
+        <div class="sb-icon">S</div>
+        <span>StudentMS</span>
+      </div>
+
+      <div class="sb-section">Main</div>
+      <a href="{{ url_for('dashboard') }}" class="sb-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="{{ url_for('students') }}" class="sb-item {% if request.endpoint in ['students','student_detail'] %}active{% endif %}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Students
+      </a>
+      <a href="{{ url_for('add_student') }}" class="sb-item {% if request.endpoint == 'add_student' %}active{% endif %}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Add Student
+      </a>
+      <a href="{{ url_for('import_csv') }}" class="sb-item {% if request.endpoint == 'import_csv' %}active{% endif %}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Import CSV
+      </a>
+    </aside>
+
+    <div class="main-area">
+      <div class="topbar">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+
+      <main class="main-content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

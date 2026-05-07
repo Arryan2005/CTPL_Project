@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}{{ student.name }} — StudentMS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h4 class="page-title">Student Profile</h4>
+    <p class="page-sub">Full details and subject breakdown</p>
+  </div>
+  <a href="{{ url_for('students') }}" class="btn-back">← Back to Students</a>
+</div>
+
+<div class="profile-grid">
+  <div class="card profile-card">
+    <div class="profile-head">
+      <div class="profile-avatar av-1">{{ student.initials() }}</div>
+      <div class="profile-info">
+        <div class="profile-name">{{ student.name }}</div>
+        <div class="profile-meta">{{ student.roll_no }} · {{ student.department }}</div>
+        <div class="profile-meta">{{ student.num_subjects }} subjects enrolled</div>
+      </div>
+      <span class="grade-pill grade-{{ student.grade() }} grade-lg">{{ student.grade() }}</span>
+    </div>
+
+    <div class="profile-stats">
+      <div class="profile-stat">
+        <div class="profile-stat-val" style="color:#185FA5;">{{ student.total_marks() | int }}</div>
+        <div class="profile-stat-lbl">Total obtained</div>
+      </div>
+      <div class="profile-stat-divider"></div>
+      <div class="profile-stat">
+        <div class="profile-stat-val" style="color:#6b7280;">{{ student.total_max() | int }}</div>
+        <div class="profile-stat-lbl">Total max</div>
+      </div>
+      <div class="profile-stat-divider"></div>
+      <div class="profile-stat">
+        <div class="profile-stat-val" style="color:{% if student.grade()=='A' %}#3B6D11{% elif student.grade()=='B' %}#185FA5{% elif student.grade()=='C' %}#854F0B{% else %}#A32D2D{% endif %};">{{ student.percentage() }}%</div>
+        <div class="profile-stat-lbl">Percentage</div>
+      </div>
+    </div>
+
+    <div class="profile-actions">
+      <a href="{{ url_for('edit_student', id=student.id) }}" class="btn-primary-custom">Edit Student</a>
+      <form method="POST" action="{{ url_for('delete_student', id=student.id) }}" style="display:inline;" onsubmit="return confirm('Delete {{ student.name }}?')">
+        <button type="submit" class="btn-danger-custom">Delete</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row" style="margin-bottom:16px;">
+      <span class="card-title">Subject-wise breakdown</span>
+      <span class="card-hint">{{ student.num_subjects }} active subjects</span>
+    </div>
+
+    {% for name, marks, max_marks in student.subjects() %}
+    {% set pct = student.sub_pct(marks, max_marks) %}
+    {% set sub_grade = 'A' if pct >= 80 else ('B' if pct >= 60 else ('C' if pct >= 40 else 'F')) %}
+    <div class="subject-detail-row">
+      <div class="subject-detail-top">
+        <span class="subject-detail-name">{{ name }}</span>
+        <span class="subject-detail-score">{{ marks | int }} / {{ max_marks | int }}</span>
+        <span class="grade-pill grade-{{ sub_grade }} grade-sm">{{ pct }}%</span>
+      </div>
+      <div class="subject-bar-wrap">
+        <div class="subject-bar-fill grade-bar-{{ sub_grade }}" style="width:{{ pct }}%"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

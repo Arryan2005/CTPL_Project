@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Students — StudentMS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h4 class="page-title">All Students</h4>
+    <p class="page-sub">{{ total }} students total</p>
+  </div>
+  <a href="{{ url_for('add_student') }}" class="btn-primary-custom">+ Add Student</a>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+  <div class="table-toolbar">
+    <form method="GET" action="{{ url_for('students') }}" class="search-row">
+      <input type="text" name="search" class="search-input" placeholder="Search name or roll no..." value="{{ search }}"/>
+      <select name="dept" class="dept-select">
+        <option value="">All Departments</option>
+        {% for d in dept_list %}
+          <option value="{{ d }}" {% if dept == d %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn-search">Search</button>
+      {% if search or dept %}
+        <a href="{{ url_for('students') }}" class="btn-clear">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if students %}
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Student</th>
+          <th>Roll No</th>
+          <th>Department</th>
+          <th>Score</th>
+          <th>Percentage</th>
+          <th>Grade</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td class="td-num">{{ loop.index }}</td>
+          <td>
+            <a href="{{ url_for('student_detail', id=s.id) }}" class="student-cell">
+              <div class="avatar-sm av-{{ (loop.index0 % 5) + 1 }}">{{ s.initials() }}</div>
+              <span class="student-name-link">{{ s.name }}</span>
+            </a>
+          </td>
+          <td><code class="roll-code">{{ s.roll_no }}</code></td>
+          <td><span class="dept-tag dept-{{ s.department | lower | replace(' ','-') }}">{{ s.department }}</span></td>
+          <td class="td-score">{{ s.total_marks() | int }} / {{ s.total_max() | int }}</td>
+          <td>
+            <div class="pct-cell">
+              <div class="pct-bar-wrap">
+                <div class="pct-bar grade-bar-{{ s.grade() }}" style="width:{{ s.percentage() }}%"></div>
+              </div>
+              <span class="pct-label">{{ s.percentage() }}%</span>
+            </div>
+          </td>
+          <td><span class="grade-pill grade-{{ s.grade() }}">{{ s.grade() }}</span></td>
+          <td>
+            <div class="action-btns">
+              <a href="{{ url_for('student_detail', id=s.id) }}" class="btn-view">View</a>
+              <a href="{{ url_for('edit_student', id=s.id) }}" class="btn-edit">Edit</a>
+              <form method="POST" action="{{ url_for('delete_student', id=s.id) }}" style="display:inline;" onsubmit="return confirm('Delete {{ s.name }}?')">
+                <button type="submit" class="btn-del">Del</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p>No students found.</p>
+    <a href="{{ url_for('add_student') }}" class="btn-primary-custom">Add your first student</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
